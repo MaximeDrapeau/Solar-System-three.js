@@ -29,7 +29,7 @@ function createScene() {
 
     // TODO: Dessiner la Terre
 
-    // TODO: Dessiner l'orbite de la planète
+    draw_orbit();
 
     // TODO: Ajout d'une source de lumière directionnelle
 
@@ -82,7 +82,6 @@ function draw_sun() {
     const geometry = new THREE.SphereGeometry( 0.01, 32, 16 );
     const material = new THREE.MeshBasicMaterial( { color: 0xfaaa00 } );
     const sphere = new THREE.Mesh( geometry, material );
-    sphere.position.set(0, 0, 0);
     scene.add( sphere );
 }
 
@@ -106,7 +105,12 @@ function draw_stars() {
 
 function draw_orbit(){
     let orbit = null;
-    // TODO: a) dessiner l'orbite de la planète
+    const geometry = new THREE.RingGeometry(0.99, 1, 64);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    material.side = THREE.DoubleSide;
+    const circle = new THREE.Mesh(geometry, material);
+    scene.add(circle);
+
     return orbit
 }
 
