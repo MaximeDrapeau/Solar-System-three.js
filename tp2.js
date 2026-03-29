@@ -10,6 +10,9 @@ let ambient_light;
 let camera_light;
 let last_render = Date.now();
 
+let stars = [];
+let star_count = 400;
+
 // NOTE: Vous pouvez ajouter des variables globales ici au besoin. ======
 
 // ========================================================================
@@ -19,7 +22,7 @@ function createScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0,0,0);
 
-    // TODO: a) Dessiner les étoiles
+    draw_stars();
 
     // TODO: a) Dessiner le système Terre-Soleil et leurs points de Lagrange
     // TODO: Dessiner le Soleil
@@ -50,6 +53,17 @@ function createScene() {
 
 function generate_random_stars() {
     // TODO: a) Générer les positions des étoiles
+    for(let i = 0; i < star_count; i++) {
+        let radius = Math.random() + 1;
+        let x = Math.random() * 2 - 1;
+        let y = Math.random() * 2 - 1;
+        let z = Math.random() * 2 - 1;
+        let normal_x = x / Math.sqrt(x*x + y*y + z*z);
+        let normal_y = y / Math.sqrt(x*x + y*y + z*z);
+        let normal_z = z / Math.sqrt(x*x + y*y + z*z);
+        let pos = {x: normal_x * radius, y: normal_y * radius, z: normal_z * radius}
+        stars.push(pos);
+    }
 }
 
 function generate_pyramid_IFS(){
@@ -76,6 +90,13 @@ function draw_earth() {
 }
 
 function draw_stars() {
+    for(let i = 0; i < star_count; i++) {
+        const geometry = new THREE.SphereGeometry( 0.002, 8, 8 );
+        const material = new THREE.MeshBasicMaterial( { color: 0xffffff } );
+        const sphere = new THREE.Mesh( geometry, material );
+        sphere.position.set(stars[i].x, stars[i].y, stars[i].z);
+        scene.add( sphere );
+    }
     // TODO: a) dessiner les étoiles
 }
 
@@ -130,7 +151,7 @@ function init() {
     }
 
     // Initialisation de la scène
-    //generate_randomStars(); // TODO: a) Décommenter cette ligne
+    generate_random_stars(); // TODO: a) Décommenter cette ligne
     //pyramidIFS = generate_pyramid_IFS(); // TODO: a) Décommenter cette ligne
 
     // TODO: a) calcul des positions des points de Lagrange
