@@ -25,7 +25,7 @@ function createScene() {
     draw_stars();
 
     // TODO: a) Dessiner le système Terre-Soleil et leurs points de Lagrange
-    // TODO: Dessiner le Soleil
+    draw_sun();
 
     // TODO: Dessiner la Terre
 
@@ -79,7 +79,11 @@ function draw_pyramid() {
 }
 
 function draw_sun() {
-    // TODO: a) Dessiner le soleil
+    const geometry = new THREE.SphereGeometry( 0.01, 32, 16 );
+    const material = new THREE.MeshBasicMaterial( { color: 0xfaaa00 } );
+    const sphere = new THREE.Mesh( geometry, material );
+    sphere.position.set(0, 0, 0);
+    scene.add( sphere );
 }
 
 function draw_earth() {
