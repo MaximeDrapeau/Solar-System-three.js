@@ -13,6 +13,9 @@ let last_render = Date.now();
 let stars = [];
 let star_count = 400;
 
+let earth_pos = { x: 1, y: 0, z: 0 };
+let earth_angle = 0;
+
 // NOTE: Vous pouvez ajouter des variables globales ici au besoin. ======
 
 // ========================================================================
@@ -28,12 +31,43 @@ function createScene() {
     draw_sun();
 
     // TODO: Dessiner la Terre
+    draw_earth();
 
     draw_orbit();
 
-    // TODO: Ajout d'une source de lumière directionnelle
+    let directional_light = new THREE.DirectionalLight(0xffffff, 1);
+    directional_light.target.position.set(earth_pos.x, earth_pos.y, earth_pos.z);
+    directional_light.position.set(0, 0 , 0);
+    scene.add(directional_light);
+    scene.add(directional_light.target);
 
     // TODO: Dessiner les points de Lagrange et l'orbite L2
+    let l1 = draw_pyramid();
+    l1.material.color.set(0xff0000);
+    l1.position.set(0.7 * Math.cos(earth_angle), 0.7 * Math.sin(earth_angle), 0);
+    scene.add(l1);
+
+    let l2 = draw_pyramid();
+    l2.material.color.set(0x00ff00);
+    l2.position.set(1.3 * Math.cos(earth_angle), 1.3 * Math.sin(earth_angle), 0);
+    scene.add(l2);
+
+    let l3 = draw_pyramid();
+    l3.material.color.set(0x0000ff);
+    l3.position.set(1 * Math.cos(Math.PI + earth_angle), 1 * Math.sin(Math.PI + earth_angle), 0);
+    scene.add(l3);
+
+    let l4 = draw_pyramid();
+    l4.material.color.set(0xffff00);
+    l4.position.set(1 * Math.cos((60 / 180 * Math.PI) + earth_angle), 
+                    1 * Math.sin((60 / 180 * Math.PI) + earth_angle), 0);
+    scene.add(l4);
+
+    let l5 = draw_pyramid();
+    l5.material.color.set(0x00ffff);
+    l5.position.set(1 * Math.cos((-60 / 180 * Math.PI) + earth_angle),
+                    1 * Math.sin((-60 / 180 * Math.PI) + earth_angle), 0);
+    scene.add(l5);
 
     // Création d'une caméra
     camera = new THREE.PerspectiveCamera(45, canvas.width/canvas.height, 0.1, 100);
@@ -42,7 +76,7 @@ function createScene() {
     camera.position.z = 1;
     camera.lookAt(0,0,0);
     scene.add(camera);
-
+Math.PI
     ambient_light = new THREE.AmbientLight("white", 0.0); // soft white light
     scene.add( ambient_light );
 
@@ -67,19 +101,40 @@ function generate_random_stars() {
 }
 
 function generate_pyramid_IFS(){
-    let model = {}
-    // TODO: a) Créer le modèle IFS de la pyramide
+    let model = {
+        vertices: new Float32Array([
+            Math.sqrt(8/9),           0,              -1/3,  
+           -Math.sqrt(2/9),  Math.sqrt(2/3),          -1/3, 
+           -Math.sqrt(2/9), -Math.sqrt(2/3),          -1/3,  
+            0,                        0,               1
+        ]),
+        indices: new Uint16Array([
+            0, 1, 2, 
+            0, 3, 1,  
+            1, 3, 2,  
+            2, 3, 0   
+        ])
+    };
     return model
 }
 
 function draw_pyramid() {
-    let pyramid = null;
-    // TODO: a) Dessiner la pyramide
+    let pyramid;
+    const geometry = new THREE.BufferGeometry();
+    const model = generate_pyramid_IFS();
+    
+    geometry.setAttribute('position', new THREE.BufferAttribute(model.vertices, 3));
+    geometry.setIndex(new THREE.BufferAttribute(model.indices, 1));
+    geometry.computeVertexNormals();
+
+    const material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+    pyramid = new THREE.Mesh( geometry, material );
+    pyramid.scale.set(0.05, 0.05, 0.05);
     return pyramid
 }
 
 function draw_sun() {
-    const geometry = new THREE.SphereGeometry( 0.01, 32, 16 );
+    const geometry = new THREE.SphereGeometry( 0.1, 32, 16 );
     const material = new THREE.MeshBasicMaterial( { color: 0xfaaa00 } );
     const sphere = new THREE.Mesh( geometry, material );
     scene.add( sphere );
@@ -87,6 +142,11 @@ function draw_sun() {
 
 function draw_earth() {
     let earth = null;
+    const geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
+    const material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x000000 } );
+    earth = new THREE.Mesh( geometry, material );
+    earth.position.set(earth_pos.x , earth_pos.y, earth_pos.z);
+    scene.add(earth);
     // TODO: a) Dessiner la planète
     // TODO: b) Appliquez la texture
     return earth
