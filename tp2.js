@@ -27,7 +27,6 @@ function createScene() {
 
     draw_stars();
 
-    // TODO: a) Dessiner le système Terre-Soleil et leurs points de Lagrange
     draw_sun();
 
     // TODO: Dessiner la Terre
@@ -41,30 +40,25 @@ function createScene() {
     scene.add(directional_light);
     scene.add(directional_light.target);
 
-    // TODO: Dessiner les points de Lagrange et l'orbite L2
-    let l1 = draw_pyramid();
-    l1.material.color.set(0xff0000);
+    // TODO: Dessiner l'orbite L2
+    let l1 = draw_pyramid(0xff0000);
     l1.position.set(0.7 * Math.cos(earth_angle), 0.7 * Math.sin(earth_angle), 0);
     scene.add(l1);
 
-    let l2 = draw_pyramid();
-    l2.material.color.set(0x00ff00);
+    let l2 = draw_pyramid(0x00ff00);
     l2.position.set(1.3 * Math.cos(earth_angle), 1.3 * Math.sin(earth_angle), 0);
     scene.add(l2);
 
-    let l3 = draw_pyramid();
-    l3.material.color.set(0x0000ff);
+    let l3 = draw_pyramid(0x0000ff);
     l3.position.set(1 * Math.cos(Math.PI + earth_angle), 1 * Math.sin(Math.PI + earth_angle), 0);
     scene.add(l3);
 
-    let l4 = draw_pyramid();
-    l4.material.color.set(0xffff00);
+    let l4 = draw_pyramid(0xffff00);
     l4.position.set(1 * Math.cos((60 / 180 * Math.PI) + earth_angle), 
                     1 * Math.sin((60 / 180 * Math.PI) + earth_angle), 0);
     scene.add(l4);
 
-    let l5 = draw_pyramid();
-    l5.material.color.set(0x00ffff);
+    let l5 = draw_pyramid(0x00ffff);
     l5.position.set(1 * Math.cos((-60 / 180 * Math.PI) + earth_angle),
                     1 * Math.sin((-60 / 180 * Math.PI) + earth_angle), 0);
     scene.add(l5);
@@ -76,7 +70,6 @@ function createScene() {
     camera.position.z = 1;
     camera.lookAt(0,0,0);
     scene.add(camera);
-Math.PI
     ambient_light = new THREE.AmbientLight("white", 0.0); // soft white light
     scene.add( ambient_light );
 
@@ -101,36 +94,57 @@ function generate_random_stars() {
 }
 
 function generate_pyramid_IFS(){
+    // IFS Structure:
+    // - vertices: array of 4 3D points (x, y, z) defining the tetrahedron corners
+    // - indices: array of triplets, each defining one triangular face
+    //
+    // Face normal calculation:
+    // For each face defined by vertices A, B, C:
+    // 1. Compute edge vectors: AB = B - A, AC = C - A
+    // 2. Normal = AB × AC (cross product)
+    // 3. Normalize the result to unit length
+    // Three.js computes this automatically via computeVertexNormals()
+    //
+    // Faces:
+    // - Base:   v0, v1, v2 (bottom triangle)
+    // - Side 1: v0, v3, v1 (front-right face)
+    // - Side 2: v1, v3, v2 (front-left face)
+    // - Side 3: v2, v3, v0 (back face)
+
     let model = {
         vertices: new Float32Array([
-            Math.sqrt(8/9),           0,              -1/3,  
-           -Math.sqrt(2/9),  Math.sqrt(2/3),          -1/3, 
-           -Math.sqrt(2/9), -Math.sqrt(2/3),          -1/3,  
-            0,                        0,               1
+            Math.sqrt(8/9),          0,             -1/3,  
+           -Math.sqrt(2/9),  Math.sqrt(2/3),        -1/3,  
+           -Math.sqrt(2/9), -Math.sqrt(2/3),        -1/3,  
+            0,                       0,              1     
         ]),
         indices: new Uint16Array([
-            0, 1, 2, 
-            0, 3, 1,  
-            1, 3, 2,  
-            2, 3, 0   
+            0, 1, 2,  // base
+            0, 3, 1,  // side 1
+            1, 3, 2,  // side 2
+            2, 3, 0   // side 3
         ])
     };
-    return model
+    return model;
 }
 
-function draw_pyramid() {
-    let pyramid;
-    const geometry = new THREE.BufferGeometry();
+function draw_pyramid(color) {  
     const model = generate_pyramid_IFS();
-    
+    const geometry = new THREE.BufferGeometry();
+
     geometry.setAttribute('position', new THREE.BufferAttribute(model.vertices, 3));
     geometry.setIndex(new THREE.BufferAttribute(model.indices, 1));
     geometry.computeVertexNormals();
 
-    const material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-    pyramid = new THREE.Mesh( geometry, material );
+    const material = new THREE.MeshPhongMaterial({
+        color: color,
+        emissive: color,          
+        emissiveIntensity: 0.2
+    });
+
+    const pyramid = new THREE.Mesh(geometry, material);
     pyramid.scale.set(0.05, 0.05, 0.05);
-    return pyramid
+    return pyramid;
 }
 
 function draw_sun() {
@@ -147,7 +161,6 @@ function draw_earth() {
     earth = new THREE.Mesh( geometry, material );
     earth.position.set(earth_pos.x , earth_pos.y, earth_pos.z);
     scene.add(earth);
-    // TODO: a) Dessiner la planète
     // TODO: b) Appliquez la texture
     return earth
 }
