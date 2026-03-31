@@ -21,23 +21,13 @@ let camera_light;
 let last_render = Date.now();
 
 let stars = [];
-let star_count = 400;
+const STAR_COUNT = 400;
 
 
-let earth_pos = { x: 1, y: 0, z: 0 };
-let earth_angle = 0;
-let earth = null;
+const EARTH_POS = { x: 1, y: 0, z: 0 };
 const EARTH_RADIUS = 1;
 
-let l1 = null;
-let l2 = null;
-let l3 = null;
-let l4 = null;
-let l5 = null;
-
-let orbit_l2 = null;
-
-let directional_light = null;
+let earth_system = null;
 
 // NOTE: Vous pouvez ajouter des variables globales ici au besoin. ======
 
@@ -53,45 +43,48 @@ function createScene() {
     scene.add(draw_sun());
 
     // TODO: Dessiner la Terre
-    draw_earth();
-    scene.add(earth);
+    earth_system = new THREE.Group();
+    
+    earth_system.add(draw_earth());
 
     scene.add(draw_orbit());
 
-    directional_light = new THREE.DirectionalLight(0xffffff, 1);
-    directional_light.target.position.set(earth_pos.x, earth_pos.y, earth_pos.z);
+    const directional_light = new THREE.DirectionalLight(0xffffff, 1);
+    directional_light.target.position.set(EARTH_POS.x, EARTH_POS.y, EARTH_POS.z);
     directional_light.position.set(0, 0 , 0);
-    scene.add(directional_light);
-    scene.add(directional_light.target);
+    earth_system.add(directional_light);
+    earth_system.add(directional_light.target);
 
     // TODO: Dessiner l'orbite L2
-    l1 = draw_pyramid(0xff0000);
-    l1.position.set(0.7 * Math.cos(earth_angle), 0.7 * Math.sin(earth_angle), 0);
-    scene.add(l1);
+    const l1 = draw_pyramid(0xff0000);
+    l1.position.set(0.7 , 0, 0);
+    earth_system.add(l1);
 
-    l2 = draw_pyramid(0x00ff00);
-    l2.position.set(1.3 * Math.cos(earth_angle), 1.3 * Math.sin(earth_angle), 0);
-    scene.add(l2);
+    const l2 = draw_pyramid(0x00ff00);
+    l2.position.set(1.3 , 0, 0);
+    earth_system.add(l2);
 
-    l3 = draw_pyramid(0x0000ff);
-    l3.position.set(1 * Math.cos(Math.PI + earth_angle), 1 * Math.sin(Math.PI + earth_angle), 0);
-    scene.add(l3);
+    const l3 = draw_pyramid(0x0000ff);
+    l3.position.set(1 * Math.cos(Math.PI), 1 * Math.sin(Math.PI), 0);
+    earth_system.add(l3);
 
-    l4 = draw_pyramid(0xffff00);
-    l4.position.set(1 * Math.cos((60 / 180 * Math.PI) + earth_angle), 
-                    1 * Math.sin((60 / 180 * Math.PI) + earth_angle), 0);
-    scene.add(l4);
+    const l4 = draw_pyramid(0xffff00);
+    l4.position.set(1 * Math.cos(60 / 180 * Math.PI), 
+                    1 * Math.sin(60 / 180 * Math.PI), 0);
+    earth_system.add(l4);
 
-    l5 = draw_pyramid(0x00ffff);
-    l5.position.set(1 * Math.cos((-60 / 180 * Math.PI) + earth_angle),
-                    1 * Math.sin((-60 / 180 * Math.PI) + earth_angle), 0);
-    scene.add(l5);
+    const l5 = draw_pyramid(0x00ffff);
+    l5.position.set(1 * Math.cos(-60 / 180 * Math.PI),
+                    1 * Math.sin(-60 / 180 * Math.PI), 0);
+    earth_system.add(l5);
 
-    orbit_l2 = draw_orbit();
+    const orbit_l2 = draw_orbit();
     orbit_l2.scale.set(EARTH_RADIUS / 8, EARTH_RADIUS / 8, 1);
     orbit_l2.position.set(l2.position.x, l2.position.y, l2.position.z);
     orbit_l2.material.color.set(0x00ff00);
-    scene.add(orbit_l2);
+    earth_system.add(orbit_l2);
+
+    scene.add(earth_system);
 
 
     // Création d'une caméra
@@ -111,7 +104,7 @@ function createScene() {
 
 function generate_random_stars() {
     // TODO: a) Générer les positions des étoiles
-    for(let i = 0; i < star_count; i++) {
+    for(let i = 0; i < STAR_COUNT; i++) {
         let radius = Math.random() + 1;
         let x = Math.random() * 2 - 1;
         let y = Math.random() * 2 - 1;
@@ -167,7 +160,7 @@ function draw_pyramid(color) {
     geometry.setIndex(new THREE.BufferAttribute(model.indices, 1));
     geometry.computeVertexNormals();
 
-    const material = new THREE.MeshPhongMaterial({
+    const material = new THREE.MeshStandardMaterial({
         color: color,
         emissive: color,          
         emissiveIntensity: 0.2
@@ -187,15 +180,17 @@ function draw_sun() {
 }
 
 function draw_earth() {
+    let earth = null;
     const geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
     const material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x000000 } );
     earth = new THREE.Mesh( geometry, material );
-    earth.position.set(earth_pos.x , earth_pos.y, earth_pos.z);
+    earth.position.set(EARTH_POS.x , EARTH_POS.y, EARTH_POS.z);
     // TODO: b) Appliquez la texture
+    return earth;
 }
 
 function draw_stars() {
-    for(let i = 0; i < star_count; i++) {
+    for(let i = 0; i < STAR_COUNT; i++) {
         const geometry = new THREE.SphereGeometry( 0.002, 8, 8 );
         const material = new THREE.MeshBasicMaterial( { color: 0xffffff } );
         const sphere = new THREE.Mesh( geometry, material );
@@ -215,21 +210,6 @@ function draw_orbit(){
     return orbit
 }
 
-function update_positions() {
-    l1.position.set(0.7 * Math.cos(earth_angle), 0.7 * Math.sin(earth_angle), 0);
-    l2.position.set(1.3 * Math.cos(earth_angle), 1.3 * Math.sin(earth_angle), 0);
-    l3.position.set(1 * Math.cos(Math.PI + earth_angle), 1 * Math.sin(Math.PI + earth_angle), 0);
-    l4.position.set(1 * Math.cos((60 / 180 * Math.PI) + earth_angle), 
-                    1 * Math.sin((60 / 180 * Math.PI) + earth_angle), 0);
-    l5.position.set(1 * Math.cos((-60 / 180 * Math.PI) + earth_angle),
-                    1 * Math.sin((-60 / 180 * Math.PI) + earth_angle), 0);
-
-    earth.position.set(Math.cos(earth_angle) , Math.sin(earth_angle), 0);
-
-    orbit_l2.position.set(l2.position.x, l2.position.y, l2.position.z);
-
-    directional_light.target.position.set(earth.position.x, earth.position.y, earth.position.z);
-}
 
 function animate() {
     // Ajout d'une lumière de point de vue
@@ -256,8 +236,7 @@ function animate() {
     let run_animation = document.getElementById("toggleAnimation");
     if (run_animation.checked) {
         // TODO: d) animer la scène
-        earth_angle += 0.01 / (2 * Math.PI);
-        update_positions();
+        earth_system.rotation.z += 0.01 / (2 * Math.PI);
     }
     last_render = Date.now();
     requestAnimationFrame(animate);
