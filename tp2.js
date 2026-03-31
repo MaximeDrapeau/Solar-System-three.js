@@ -1,3 +1,13 @@
+/** 
+ * Maxime Dapeau DRAM89110108
+ * 
+ * Le travail a ete fait avec firefox
+ */
+
+
+
+
+
 "use strict";
 import * as THREE from 'three';
 import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
@@ -16,7 +26,18 @@ let star_count = 400;
 
 let earth_pos = { x: 1, y: 0, z: 0 };
 let earth_angle = 0;
+let earth = null;
 const EARTH_RADIUS = 1;
+
+let l1 = null;
+let l2 = null;
+let l3 = null;
+let l4 = null;
+let l5 = null;
+
+let orbit_l2 = null;
+
+let directional_light = null;
 
 // NOTE: Vous pouvez ajouter des variables globales ici au besoin. ======
 
@@ -33,41 +54,41 @@ function createScene() {
 
     // TODO: Dessiner la Terre
     draw_earth();
+    scene.add(earth);
 
     scene.add(draw_orbit());
 
-    let directional_light = new THREE.DirectionalLight(0xffffff, 1);
+    directional_light = new THREE.DirectionalLight(0xffffff, 1);
     directional_light.target.position.set(earth_pos.x, earth_pos.y, earth_pos.z);
     directional_light.position.set(0, 0 , 0);
     scene.add(directional_light);
     scene.add(directional_light.target);
 
     // TODO: Dessiner l'orbite L2
-    let l1 = draw_pyramid(0xff0000);
+    l1 = draw_pyramid(0xff0000);
     l1.position.set(0.7 * Math.cos(earth_angle), 0.7 * Math.sin(earth_angle), 0);
     scene.add(l1);
 
-    let l2 = draw_pyramid(0x00ff00);
+    l2 = draw_pyramid(0x00ff00);
     l2.position.set(1.3 * Math.cos(earth_angle), 1.3 * Math.sin(earth_angle), 0);
     scene.add(l2);
 
-    let l3 = draw_pyramid(0x0000ff);
+    l3 = draw_pyramid(0x0000ff);
     l3.position.set(1 * Math.cos(Math.PI + earth_angle), 1 * Math.sin(Math.PI + earth_angle), 0);
     scene.add(l3);
 
-    let l4 = draw_pyramid(0xffff00);
+    l4 = draw_pyramid(0xffff00);
     l4.position.set(1 * Math.cos((60 / 180 * Math.PI) + earth_angle), 
                     1 * Math.sin((60 / 180 * Math.PI) + earth_angle), 0);
     scene.add(l4);
 
-    let l5 = draw_pyramid(0x00ffff);
+    l5 = draw_pyramid(0x00ffff);
     l5.position.set(1 * Math.cos((-60 / 180 * Math.PI) + earth_angle),
                     1 * Math.sin((-60 / 180 * Math.PI) + earth_angle), 0);
     scene.add(l5);
 
-    const orbit_l2 = draw_orbit();
+    orbit_l2 = draw_orbit();
     orbit_l2.scale.set(EARTH_RADIUS / 8, EARTH_RADIUS / 8, 1);
-    console.log(orbit_l2.scale);
     orbit_l2.position.set(l2.position.x, l2.position.y, l2.position.z);
     orbit_l2.material.color.set(0x00ff00);
     scene.add(orbit_l2);
@@ -166,14 +187,11 @@ function draw_sun() {
 }
 
 function draw_earth() {
-    let earth = null;
     const geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
     const material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x000000 } );
     earth = new THREE.Mesh( geometry, material );
     earth.position.set(earth_pos.x , earth_pos.y, earth_pos.z);
-    scene.add(earth);
     // TODO: b) Appliquez la texture
-    return earth
 }
 
 function draw_stars() {
@@ -195,6 +213,22 @@ function draw_orbit(){
     orbit = new THREE.Mesh(geometry, material);
 
     return orbit
+}
+
+function update_positions() {
+    l1.position.set(0.7 * Math.cos(earth_angle), 0.7 * Math.sin(earth_angle), 0);
+    l2.position.set(1.3 * Math.cos(earth_angle), 1.3 * Math.sin(earth_angle), 0);
+    l3.position.set(1 * Math.cos(Math.PI + earth_angle), 1 * Math.sin(Math.PI + earth_angle), 0);
+    l4.position.set(1 * Math.cos((60 / 180 * Math.PI) + earth_angle), 
+                    1 * Math.sin((60 / 180 * Math.PI) + earth_angle), 0);
+    l5.position.set(1 * Math.cos((-60 / 180 * Math.PI) + earth_angle),
+                    1 * Math.sin((-60 / 180 * Math.PI) + earth_angle), 0);
+
+    earth.position.set(Math.cos(earth_angle) , Math.sin(earth_angle), 0);
+
+    orbit_l2.position.set(l2.position.x, l2.position.y, l2.position.z);
+
+    directional_light.target.position.set(earth.position.x, earth.position.y, earth.position.z);
 }
 
 function animate() {
@@ -222,6 +256,8 @@ function animate() {
     let run_animation = document.getElementById("toggleAnimation");
     if (run_animation.checked) {
         // TODO: d) animer la scène
+        earth_angle += 0.01 / (2 * Math.PI);
+        update_positions();
     }
     last_render = Date.now();
     requestAnimationFrame(animate);
@@ -244,8 +280,6 @@ function init() {
     // Initialisation de la scène
     generate_random_stars(); // TODO: a) Décommenter cette ligne
     //pyramidIFS = generate_pyramid_IFS(); // TODO: a) Décommenter cette ligne
-
-    // TODO: a) calcul des positions des points de Lagrange
 
     // TODO: b) Importation des textures
 
