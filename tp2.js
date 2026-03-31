@@ -13,8 +13,10 @@ let last_render = Date.now();
 let stars = [];
 let star_count = 400;
 
+
 let earth_pos = { x: 1, y: 0, z: 0 };
 let earth_angle = 0;
+const EARTH_RADIUS = 1;
 
 // NOTE: Vous pouvez ajouter des variables globales ici au besoin. ======
 
@@ -27,12 +29,12 @@ function createScene() {
 
     draw_stars();
 
-    draw_sun();
+    scene.add(draw_sun());
 
     // TODO: Dessiner la Terre
     draw_earth();
 
-    draw_orbit();
+    scene.add(draw_orbit());
 
     let directional_light = new THREE.DirectionalLight(0xffffff, 1);
     directional_light.target.position.set(earth_pos.x, earth_pos.y, earth_pos.z);
@@ -62,6 +64,14 @@ function createScene() {
     l5.position.set(1 * Math.cos((-60 / 180 * Math.PI) + earth_angle),
                     1 * Math.sin((-60 / 180 * Math.PI) + earth_angle), 0);
     scene.add(l5);
+
+    const orbit_l2 = draw_orbit();
+    orbit_l2.scale.set(EARTH_RADIUS / 8, EARTH_RADIUS / 8, 1);
+    console.log(orbit_l2.scale);
+    orbit_l2.position.set(l2.position.x, l2.position.y, l2.position.z);
+    orbit_l2.material.color.set(0x00ff00);
+    scene.add(orbit_l2);
+
 
     // Création d'une caméra
     camera = new THREE.PerspectiveCamera(45, canvas.width/canvas.height, 0.1, 100);
@@ -148,10 +158,11 @@ function draw_pyramid(color) {
 }
 
 function draw_sun() {
+    let sun = null;
     const geometry = new THREE.SphereGeometry( 0.1, 32, 16 );
     const material = new THREE.MeshBasicMaterial( { color: 0xfaaa00 } );
-    const sphere = new THREE.Mesh( geometry, material );
-    scene.add( sphere );
+    sun = new THREE.Mesh( geometry, material );
+    return sun;
 }
 
 function draw_earth() {
@@ -181,8 +192,7 @@ function draw_orbit(){
     const geometry = new THREE.RingGeometry(0.99, 1, 64);
     const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
     material.side = THREE.DoubleSide;
-    const circle = new THREE.Mesh(geometry, material);
-    scene.add(circle);
+    orbit = new THREE.Mesh(geometry, material);
 
     return orbit
 }
