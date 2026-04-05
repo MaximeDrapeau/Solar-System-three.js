@@ -31,6 +31,7 @@ let earth_system = null;
 let earth_angle = 0;
 
 let satellite = null;
+let satellite_angle = 0;
 
 let l2_point = null;
 
@@ -255,6 +256,12 @@ function animate() {
         earth_system.rotation.z += 0.01 / (2 * Math.PI);
         earth_angle += 0.001;
         planet_texture.offset.set(earth_angle, 0);
+        if(satellite) {
+            satellite_angle += 0.001;
+            satellite.position.set((EARTH_RADIUS / 8) * Math.cos(satellite_angle),
+                                   (EARTH_RADIUS / 8) * Math.sin(satellite_angle), 0);
+            satellite.rotation.z = satellite_angle + Math.PI / 2;
+        }
     }
     last_render = Date.now();
     requestAnimationFrame(animate);
