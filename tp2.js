@@ -30,6 +30,10 @@ let planet_texture = null;
 let earth_system = null;
 let earth_angle = 0;
 
+let satellite = null;
+
+let l2_point = null;
+
 // NOTE: Vous pouvez ajouter des variables globales ici au besoin. ======
 
 // ========================================================================
@@ -125,14 +129,21 @@ function draw_system() {
     earth_system.add(directional_light);
     earth_system.add(directional_light.target);
 
-    // TODO: Dessiner l'orbite L2
     const l1 = draw_pyramid(0xff0000);
     l1.position.set(0.7 , 0, 0);
     earth_system.add(l1);
 
-    const l2 = draw_pyramid(0x00ff00);
-    l2.position.set(1.3 , 0, 0);
-    earth_system.add(l2);
+    l2_point = new THREE.Group();
+    l2_point.position.set(1.3, 0, 0);
+    earth_system.add(l2_point);
+
+    const l2_pyramid = draw_pyramid(0x00ff00);
+    l2_point.add(l2_pyramid);
+
+    const orbit_l2 = draw_orbit();
+    orbit_l2.scale.set(EARTH_RADIUS / 8, EARTH_RADIUS / 8, 1);
+    orbit_l2.material.color.set(0x00ff00);
+    l2_point.add(orbit_l2);
 
     const l3 = draw_pyramid(0x0000ff);
     l3.position.set(1 * Math.cos(Math.PI), 1 * Math.sin(Math.PI), 0);
@@ -148,11 +159,7 @@ function draw_system() {
                     1 * Math.sin(-60 / 180 * Math.PI), 0);
     earth_system.add(l5);
 
-    const orbit_l2 = draw_orbit();
-    orbit_l2.scale.set(EARTH_RADIUS / 8, EARTH_RADIUS / 8, 1);
-    orbit_l2.position.set(l2.position.x, l2.position.y, l2.position.z);
-    orbit_l2.material.color.set(0x00ff00);
-    earth_system.add(orbit_l2);
+
 
     scene.add(earth_system);
 }
@@ -281,6 +288,20 @@ function init() {
     planet_texture.wrapT = THREE.ClampToEdgeWrapping;           
 
     // TODO: c) Importer le satellite
+
+    const GLTF_loader = new GLTFLoader();
+    GLTF_loader.load("tp2_satellite.glb",
+        (gltf_result) => {  // renamed to avoid confusion
+            console.log("GLTF loaded", gltf_result);
+            satellite = gltf_result.scene;
+            satellite.scale.set(0.01, 0.01, 0.01);
+            satellite.position.set(EARTH_RADIUS / 8, 0, 0);
+            satellite.rotation.z += Math.PI / 2;
+            l2_point.add(satellite);
+        },
+        undefined,
+        (error) => { console.error("Failed:", error); }
+    );
 
     // Création de la scène 3D
     createScene();
