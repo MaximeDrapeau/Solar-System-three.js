@@ -28,6 +28,7 @@ const EARTH_POS = { x: 1, y: 0, z: 0 };
 const EARTH_RADIUS = 1;
 let planet_texture = null;
 let earth_system = null;
+let earth_angle = 0;
 
 // NOTE: Vous pouvez ajouter des variables globales ici au besoin. ======
 
@@ -245,6 +246,8 @@ function animate() {
     if (run_animation.checked) {
         // TODO: d) animer la scène
         earth_system.rotation.z += 0.01 / (2 * Math.PI);
+        earth_angle += 0.001;
+        planet_texture.offset.set(earth_angle, 0);
     }
     last_render = Date.now();
     requestAnimationFrame(animate);
