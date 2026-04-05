@@ -26,7 +26,7 @@ const STAR_COUNT = 400;
 
 const EARTH_POS = { x: 1, y: 0, z: 0 };
 const EARTH_RADIUS = 1;
-
+let planet_texture = null;
 let earth_system = null;
 
 // NOTE: Vous pouvez ajouter des variables globales ici au besoin. ======
@@ -43,49 +43,8 @@ function createScene() {
     scene.add(draw_sun());
 
     // TODO: Dessiner la Terre
-    earth_system = new THREE.Group();
     
-    earth_system.add(draw_earth());
-
-    scene.add(draw_orbit());
-
-    const directional_light = new THREE.DirectionalLight(0xffffff, 1);
-    directional_light.target.position.set(EARTH_POS.x, EARTH_POS.y, EARTH_POS.z);
-    directional_light.position.set(0, 0 , 0);
-    earth_system.add(directional_light);
-    earth_system.add(directional_light.target);
-
-    // TODO: Dessiner l'orbite L2
-    const l1 = draw_pyramid(0xff0000);
-    l1.position.set(0.7 , 0, 0);
-    earth_system.add(l1);
-
-    const l2 = draw_pyramid(0x00ff00);
-    l2.position.set(1.3 , 0, 0);
-    earth_system.add(l2);
-
-    const l3 = draw_pyramid(0x0000ff);
-    l3.position.set(1 * Math.cos(Math.PI), 1 * Math.sin(Math.PI), 0);
-    earth_system.add(l3);
-
-    const l4 = draw_pyramid(0xffff00);
-    l4.position.set(1 * Math.cos(60 / 180 * Math.PI), 
-                    1 * Math.sin(60 / 180 * Math.PI), 0);
-    earth_system.add(l4);
-
-    const l5 = draw_pyramid(0x00ffff);
-    l5.position.set(1 * Math.cos(-60 / 180 * Math.PI),
-                    1 * Math.sin(-60 / 180 * Math.PI), 0);
-    earth_system.add(l5);
-
-    const orbit_l2 = draw_orbit();
-    orbit_l2.scale.set(EARTH_RADIUS / 8, EARTH_RADIUS / 8, 1);
-    orbit_l2.position.set(l2.position.x, l2.position.y, l2.position.z);
-    orbit_l2.material.color.set(0x00ff00);
-    earth_system.add(orbit_l2);
-
-    scene.add(earth_system);
-
+    draw_system();
 
     // Création d'une caméra
     camera = new THREE.PerspectiveCamera(45, canvas.width/canvas.height, 0.1, 100);
@@ -152,6 +111,51 @@ function generate_pyramid_IFS(){
     return model;
 }
 
+function draw_system() {
+    earth_system = new THREE.Group();
+    
+    earth_system.add(draw_earth());
+
+    scene.add(draw_orbit());
+
+    const directional_light = new THREE.DirectionalLight(0xffffff, 1);
+    directional_light.target.position.set(EARTH_POS.x, EARTH_POS.y, EARTH_POS.z);
+    directional_light.position.set(0, 0 , 0);
+    earth_system.add(directional_light);
+    earth_system.add(directional_light.target);
+
+    // TODO: Dessiner l'orbite L2
+    const l1 = draw_pyramid(0xff0000);
+    l1.position.set(0.7 , 0, 0);
+    earth_system.add(l1);
+
+    const l2 = draw_pyramid(0x00ff00);
+    l2.position.set(1.3 , 0, 0);
+    earth_system.add(l2);
+
+    const l3 = draw_pyramid(0x0000ff);
+    l3.position.set(1 * Math.cos(Math.PI), 1 * Math.sin(Math.PI), 0);
+    earth_system.add(l3);
+
+    const l4 = draw_pyramid(0xffff00);
+    l4.position.set(1 * Math.cos(60 / 180 * Math.PI), 
+                    1 * Math.sin(60 / 180 * Math.PI), 0);
+    earth_system.add(l4);
+
+    const l5 = draw_pyramid(0x00ffff);
+    l5.position.set(1 * Math.cos(-60 / 180 * Math.PI),
+                    1 * Math.sin(-60 / 180 * Math.PI), 0);
+    earth_system.add(l5);
+
+    const orbit_l2 = draw_orbit();
+    orbit_l2.scale.set(EARTH_RADIUS / 8, EARTH_RADIUS / 8, 1);
+    orbit_l2.position.set(l2.position.x, l2.position.y, l2.position.z);
+    orbit_l2.material.color.set(0x00ff00);
+    earth_system.add(orbit_l2);
+
+    scene.add(earth_system);
+}
+
 function draw_pyramid(color) {  
     const model = generate_pyramid_IFS();
     const geometry = new THREE.BufferGeometry();
@@ -182,10 +186,14 @@ function draw_sun() {
 function draw_earth() {
     let earth = null;
     const geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
-    const material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x000000 } );
+    
+    const material = new THREE.MeshStandardMaterial({
+        map: planet_texture,
+        color: 0xffffff, 
+    });
     earth = new THREE.Mesh( geometry, material );
-    earth.position.set(EARTH_POS.x , EARTH_POS.y, EARTH_POS.z);
-    // TODO: b) Appliquez la texture
+    earth.position.set(EARTH_POS.x , EARTH_POS.y, EARTH_POS.z);    
+
     return earth;
 }
 
@@ -261,6 +269,13 @@ function init() {
     //pyramidIFS = generate_pyramid_IFS(); // TODO: a) Décommenter cette ligne
 
     // TODO: b) Importation des textures
+    const loader = new THREE.TextureLoader();
+    planet_texture = loader.load('TP2_texture_planet.jpg');
+
+    planet_texture.minFilter = THREE.LinearFilter;
+
+    planet_texture.wrapS = THREE.RepeatWrapping;
+    planet_texture.wrapT = THREE.ClampToEdgeWrapping;           
 
     // TODO: c) Importer le satellite
 
