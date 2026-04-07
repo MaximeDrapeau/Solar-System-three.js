@@ -22,6 +22,7 @@ let last_render = Date.now();
 
 let stars = [];
 const STAR_COUNT = 400;
+let star_texture = null;
 
 
 const EARTH_POS = { x: 1, y: 0, z: 0 };
@@ -35,6 +36,8 @@ let satellite_angle = 0;
 
 let l2_point = null;
 
+let pyramidIFS = null;
+
 // NOTE: Vous pouvez ajouter des variables globales ici au besoin. ======
 
 // ========================================================================
@@ -47,8 +50,6 @@ function createScene() {
     draw_stars();
 
     scene.add(draw_sun());
-
-    // TODO: Dessiner la Terre
     
     draw_system();
 
@@ -59,7 +60,7 @@ function createScene() {
     camera.position.z = 1;
     camera.lookAt(0,0,0);
     scene.add(camera);
-    ambient_light = new THREE.AmbientLight("white", 0.0); // soft white light
+    ambient_light = new THREE.AmbientLight("white", 0.0);
     scene.add( ambient_light );
 
     camera_light = new THREE.DirectionalLight("white", 0.0);
@@ -68,7 +69,6 @@ function createScene() {
 }
 
 function generate_random_stars() {
-    // TODO: a) Générer les positions des étoiles
     for(let i = 0; i < STAR_COUNT; i++) {
         let radius = Math.random() + 1;
         let x = Math.random() * 2 - 1;
@@ -166,11 +166,10 @@ function draw_system() {
 }
 
 function draw_pyramid(color) {  
-    const model = generate_pyramid_IFS();
     const geometry = new THREE.BufferGeometry();
 
-    geometry.setAttribute('position', new THREE.BufferAttribute(model.vertices, 3));
-    geometry.setIndex(new THREE.BufferAttribute(model.indices, 1));
+    geometry.setAttribute('position', new THREE.BufferAttribute(pyramidIFS.vertices, 3));
+    geometry.setIndex(new THREE.BufferAttribute(pyramidIFS.indices, 1));
     geometry.computeVertexNormals();
 
     const material = new THREE.MeshStandardMaterial({
@@ -208,13 +207,12 @@ function draw_earth() {
 
 function draw_stars() {
     for(let i = 0; i < STAR_COUNT; i++) {
-        const geometry = new THREE.SphereGeometry( 0.002, 8, 8 );
-        const material = new THREE.MeshBasicMaterial( { color: 0xffffff } );
-        const sphere = new THREE.Mesh( geometry, material );
-        sphere.position.set(stars[i].x, stars[i].y, stars[i].z);
-        scene.add( sphere );
+        const material = new THREE.SpriteMaterial( { map: star_texture } );
+        const star = new THREE.Sprite(material);
+        star.position.set(stars[i].x, stars[i].y, stars[i].z);
+        star.scale.set(0.05, 0.05, 0.05);
+        scene.add( star );
     }
-    // TODO: a) dessiner les étoiles
 }
 
 function draw_orbit(){
@@ -252,7 +250,6 @@ function animate() {
     // Contrôle de l'animation
     let run_animation = document.getElementById("toggleAnimation");
     if (run_animation.checked) {
-        // TODO: d) animer la scène
         earth_system.rotation.z += 0.01 / (2 * Math.PI);
         earth_angle += 0.001;
         planet_texture.offset.set(earth_angle, 0);
@@ -282,23 +279,22 @@ function init() {
     }
 
     // Initialisation de la scène
-    generate_random_stars(); // TODO: a) Décommenter cette ligne
-    //pyramidIFS = generate_pyramid_IFS(); // TODO: a) Décommenter cette ligne
+    generate_random_stars();
+    pyramidIFS = generate_pyramid_IFS();
 
-    // TODO: b) Importation des textures
     const loader = new THREE.TextureLoader();
     planet_texture = loader.load('TP2_texture_planet.jpg');
+    star_texture = loader.load('tp2_etoile.png');
 
     planet_texture.minFilter = THREE.LinearFilter;
 
     planet_texture.wrapS = THREE.RepeatWrapping;
     planet_texture.wrapT = THREE.ClampToEdgeWrapping;           
 
-    // TODO: c) Importer le satellite
 
     const GLTF_loader = new GLTFLoader();
     GLTF_loader.load("tp2_satellite.glb",
-        (gltf_result) => {  // renamed to avoid confusion
+        (gltf_result) => {
             console.log("GLTF loaded", gltf_result);
             satellite = gltf_result.scene;
             satellite.scale.set(0.01, 0.01, 0.01);
