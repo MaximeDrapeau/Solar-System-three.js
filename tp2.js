@@ -160,8 +160,6 @@ function draw_system() {
                     1 * Math.sin(-60 / 180 * Math.PI), 0);
     earth_system.add(l5);
 
-
-
     scene.add(earth_system);
 }
 
